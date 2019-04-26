@@ -17,7 +17,10 @@ import { createMarket } from "../graphql/mutations";
 class NewMarket extends React.Component {
 	state = {
     addMarketDialog: false,
-    name: ""
+    tags: ["Art","Web Dev", "Technology", "Crafts", "Entertainment"],
+    options: [],
+    name: "",
+    selectedTags: []
   };
 
   toggleAddMarketDialog = ()=>{
@@ -27,19 +30,37 @@ class NewMarket extends React.Component {
       }
     })
   }
+
+  handleSelectTags = (selectedTags)=>{
+    this.setState({
+      selectedTags
+    })
+  }
+
+  handleFilterTags = query=>{
+    const {tags} = this.state;
+    const options = tags.map(tag =>({value: tag, label:tag}))
+    .filter(tag => tag.label.toLocaleLowerCase().includes(query.toLocaleLowerCase()))
+    this.setState({
+      options
+    })
+  }
+
   handleAddMarket = async(user)=>{
     try{
-      const {name} = this.state
+      const {name, selectedTags} = this.state
       const result =  await API.graphql(graphqlOperation(createMarket, {
         input: {
           name,
-          owner: user.username
+          owner: user.username,
+          tags: selectedTags
         }
       }))
       console.log(result)
       this.setState({
         addMarketDialog: false,
-        name: ""
+        name: "",
+        selectedTags: []
       })
     }catch(err){
       Notification.error({
@@ -50,8 +71,8 @@ class NewMarket extends React.Component {
   }
 
 	render() {
-    const {addMarketDialog, name} = this.state
-    const {toggleAddMarketDialog, handleAddMarket}  =this
+    const {addMarketDialog, name, options} = this.state
+    const {toggleAddMarketDialog, handleAddMarket, handleSelectTags, handleFilterTags}  = this
 		return (
       <UserContext.Consumer>
 			{({user}) =><>
@@ -66,6 +87,11 @@ class NewMarket extends React.Component {
             <Form labelPosition="top">
               <Form.Item label="Market Name">
                 <Input value={name} placeholder="Market Name" trim={true} onChange={(name) =>this.setState({name}) }/>
+              </Form.Item>
+              <Form.Item label="Add Tags">
+                  <Select multiple={true} filterable={true} placeholder="Market Tag" onChange={selectedTags => handleSelectTags(selectedTags)} remoteMethod={handleFilterTags} remote={true}>
+                  {options.map(option => <Select.Option key={option.value} label={option.label} value={option.value}/>)}
+                  </Select>
               </Form.Item>
             </Form>
           </Dialog.Body>
