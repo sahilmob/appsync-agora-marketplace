@@ -6,6 +6,7 @@ import { Route, BrowserRouter as Router } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
 import MarketPage from "./pages/MarketPage";
+import Navbar from "./components/Navbar";
 import ProfilePage from "./pages/ProfilePage";
 import React from "react";
 
@@ -50,13 +51,24 @@ class App extends React.Component {
 		}
 	};
 
+	handleSignOut = async () => {
+		try {
+			await Auth.signOut();
+		} catch (err) {
+			console.error("Error signing out user", err);
+		}
+	};
+
 	render() {
 		const { user } = this.state;
+		const { handleSignOut } = this;
+
 		return !user ? (
 			<Authenticator theme={theme} />
 		) : (
 			<Router>
 				<>
+					<Navbar user={user} handleSignOut={handleSignOut} />
 					<div className="app-container">
 						<Route exact path="/" component={HomePage} />
 						<Route path="/profile" component={ProfilePage} />
