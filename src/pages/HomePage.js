@@ -1,11 +1,18 @@
+import MarketList from "../components/MarketList";
+import NewMarket from "../components/NewMarket";
 import React from "react";
 
 class HomePage extends React.Component {
-  state = {};
+	state = {};
 
-  render() {
-    return <div>Home</div>;
-  }
+	render() {
+		return (
+			<>
+				<NewMarket />
+				<MarketList />
+			</>
+		);
+	}
 }
 
 export default HomePage;

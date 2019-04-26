@@ -10,6 +10,8 @@ import Navbar from "./components/Navbar";
 import ProfilePage from "./pages/ProfilePage";
 import React from "react";
 
+export const UserContext = React.createContext();
+
 class App extends React.Component {
 	state = {
 		user: null
@@ -66,21 +68,23 @@ class App extends React.Component {
 		return !user ? (
 			<Authenticator theme={theme} />
 		) : (
-			<Router>
-				<>
-					<Navbar user={user} handleSignOut={handleSignOut} />
-					<div className="app-container">
-						<Route exact path="/" component={HomePage} />
-						<Route path="/profile" component={ProfilePage} />
-						<Route
-							path="/market/:marketId"
-							component={({ match }) => (
-								<MarketPage marketId={match.params.marketId} />
-							)}
-						/>
-					</div>
-				</>
-			</Router>
+			<UserContext.Provider value={{ user }}>
+				<Router>
+					<>
+						<Navbar user={user} handleSignOut={handleSignOut} />
+						<div className="app-container">
+							<Route exact path="/" component={HomePage} />
+							<Route path="/profile" component={ProfilePage} />
+							<Route
+								path="/market/:marketId"
+								component={({ match }) => (
+									<MarketPage marketId={match.params.marketId} />
+								)}
+							/>
+						</div>
+					</>
+				</Router>
+			</UserContext.Provider>
 		);
 	}
 }
