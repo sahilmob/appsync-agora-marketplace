@@ -1,12 +1,13 @@
 import React from "react";
+
 // import { Loading, Tabs, Icon } from "element-react";
 
 class MarketPage extends React.Component {
-  state = {};
+	state = {};
 
-  render() {
-    return <div>MarketPage</div>;
-  }
+	render() {
+		return <div>{this.props.marketId}</div>;
+	}
 }
 
 export default MarketPage;
