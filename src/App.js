@@ -2,7 +2,11 @@ import "./App.css";
 
 import { AmplifyTheme, Authenticator } from "aws-amplify-react";
 import { Auth, Hub } from "aws-amplify";
+import { Route, BrowserRouter as Router } from "react-router-dom";
 
+import HomePage from "./pages/HomePage";
+import MarketPage from "./pages/MarketPage";
+import ProfilePage from "./pages/ProfilePage";
 import React from "react";
 
 class App extends React.Component {
@@ -48,7 +52,24 @@ class App extends React.Component {
 
 	render() {
 		const { user } = this.state;
-		return !user ? <Authenticator theme={theme} /> : <div>App</div>;
+		return !user ? (
+			<Authenticator theme={theme} />
+		) : (
+			<Router>
+				<>
+					<div className="app-container">
+						<Route exact path="/" component={HomePage} />
+						<Route path="/profile" component={ProfilePage} />
+						<Route
+							path="/market/:marketId"
+							component={({ match }) => (
+								<MarketPage marketId={match.params.marketId} />
+							)}
+						/>
+					</div>
+				</>
+			</Router>
+		);
 	}
 }
 
