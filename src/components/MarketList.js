@@ -6,10 +6,37 @@ import { Link } from "react-router-dom";
 import React from "react";
 import { graphqlOperation } from "aws-amplify";
 import { listMarkets } from "../graphql/queries";
+import { onCreateMarket } from "../graphql/subscriptions";
 
 const MarketList = () => {
+	//prevQuery is prev data from listMarkets
+	const onNewMarket = (prevQuery, newData) => {
+		//we have copied the prevQuery in order to have the items object in list market available
+		// similar to {
+		//   ...prevQuery ,
+		//     listMarkets: {
+		//       ...prevQuery.listMarkets
+		//       items: {
+		//         ...prevQuery.listMarkets.items,
+		//           newData.onCreateMarket
+		//       }
+		//     }
+		// }
+
+		let updatedQuery = { ...prevQuery };
+		const updatedMarketList = [
+			newData.onCreateMarket,
+			...prevQuery.listMarkets.items
+		];
+		updatedQuery.listMarkets.items = updatedMarketList;
+		return updatedQuery;
+	};
 	return (
-		<Connect query={graphqlOperation(listMarkets)}>
+		<Connect
+			query={graphqlOperation(listMarkets)}
+			subscription={graphqlOperation(onCreateMarket)}
+			onSubscriptionMsg={onNewMarket}
+		>
 			{({ data: { listMarkets }, loading, errors }) => {
 				if (errors.length > 0) return <Error errors={errors} />;
 				if (loading || !listMarkets) return <Loading fullscreen={true} />;
