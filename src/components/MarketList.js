@@ -8,7 +8,7 @@ import { graphqlOperation } from "aws-amplify";
 import { listMarkets } from "../graphql/queries";
 import { onCreateMarket } from "../graphql/subscriptions";
 
-const MarketList = () => {
+const MarketList = ({ searchResults }) => {
 	//prevQuery is prev data from listMarkets
 	const onNewMarket = (prevQuery, newData) => {
 		//we have copied the prevQuery in order to have the items object in list market available
@@ -40,16 +40,26 @@ const MarketList = () => {
 			{({ data: { listMarkets }, loading, errors }) => {
 				if (errors.length > 0) return <Error errors={errors} />;
 				if (loading || !listMarkets) return <Loading fullscreen={true} />;
+				const markets =
+					searchResults.length > 0 ? searchResults : listMarkets.items;
 				return (
 					<>
-						<h2 className="header">
-							<img
-								src="https://icon.now.sh/store_mall_directory/527FFF"
-								alt="store icon"
-							/>
-							Markets
-						</h2>
-						{listMarkets.items.map(market => (
+						{searchResults.length > 0 ? (
+							<h2 className="text-green">
+								<Icon type="success" name="check" className="icon" />
+								{searchResults.length}{" "}
+								{searchResults.length === 1 ? "Result" : "Results"}
+							</h2>
+						) : (
+							<h2 className="header">
+								<img
+									src="https://icon.now.sh/store_mall_directory/527FFF"
+									alt="store icon"
+								/>
+								Markets
+							</h2>
+						)}
+						{markets.map(market => (
 							<div className="my-2" key={market.id}>
 								<Card
 									bodyStyle={{
