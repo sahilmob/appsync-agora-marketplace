@@ -71,8 +71,9 @@ class NewMarket extends React.Component {
   }
 
 	render() {
-    const {addMarketDialog, name, options} = this.state
-    const {toggleAddMarketDialog, handleAddMarket, handleSelectTags, handleFilterTags}  = this
+    const {addMarketDialog, name, options} = this.state;
+    const {toggleAddMarketDialog, handleAddMarket, handleSelectTags, handleFilterTags}  = this;
+    const { handleSearch, searchTerm, handleSearchChange, handleClearSearch, isSearching} = this.props
 		return (
       <UserContext.Consumer>
 			{({user}) =><>
@@ -80,7 +81,18 @@ class NewMarket extends React.Component {
 					<h1 className="market-title">Create Your Marketplace
           <Button type="text" icon="edit" className="market-title-button" onClick={toggleAddMarketDialog}/>
           </h1>
+
+          <Form inline={true} onSubmit={handleSearch}>
+            <Form.Item>
+                <Input placeholder="Search Markets..." value={searchTerm} onChange={handleSearchChange} onIconClick={handleClearSearch} icon="circle-cross"/>
+            </Form.Item>
+            <Form.Item>
+                <Button type="info" icon="search" onClick={handleSearch} loading={isSearching}>Search</Button>
+            </Form.Item>
+          </Form>
+
 				</div>
+
         <Dialog
         title="Create New Market" visible={addMarketDialog} onCancel={toggleAddMarketDialog} size="large" customClass="dialog">
           <Dialog.Body>
