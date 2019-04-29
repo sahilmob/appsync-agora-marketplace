@@ -1,3 +1,4 @@
+import { API, Auth, Storage, graphqlOperation } from "aws-amplify";
 import {
 	Button,
 	Form,
@@ -9,6 +10,9 @@ import {
 
 import { PhotoPicker } from "aws-amplify-react";
 import React from "react";
+import aws_exports from "../aws-exports";
+import { convertDollarsToCents } from "../utils";
+import { createProduct } from "../graphql/mutations";
 
 // prettier-ignore
 const initialState = {
@@ -16,18 +20,71 @@ const initialState = {
   price: "",
   shipped: true,
   imagePreview: "",
-  image: ""
+  image: "",
+  isUploading: false
 };
 class NewProduct extends React.Component {
 	state = { ...initialState };
 
-	handleAddProduct = () => {
-		console.log(this.state);
-		this.setState({ ...initialState });
+	handleAddProduct = async () => {
+		const { image, description, price, shipped } = this.state;
+		const { marketId } = this.props;
+
+		try {
+			this.setState({
+				isUploading: true
+			});
+
+			const visibility = "public";
+
+			const { identityId } = await Auth.currentCredentials();
+
+			const filename = `/${visibility}/${identityId}/${Date.now()}-${
+				image.name
+			}`;
+
+			this.setState({ ...initialState });
+
+			const uploadedFile = await Storage.put(filename, image.file, {
+				contentType: image.type
+			});
+
+			const file = {
+				key: uploadedFile.key,
+				bucket: aws_exports.aws_user_files_s3_bucket,
+				region: aws_exports.aws_user_files_s3_bucket_region
+			};
+
+			const input = {
+				productMarketId: marketId,
+				price: convertDollarsToCents(price),
+				description,
+				shipped,
+				file
+			};
+			const {
+				data: { createProduct: createdProduct }
+			} = await API.graphql(graphqlOperation(createProduct, { input }));
+			console.log("Created product", createdProduct);
+			Notification({
+				title: "Success",
+				message: "Product successfully created!",
+				type: "success"
+			});
+		} catch (err) {
+			console.log("error adding product");
+		}
 	};
 
 	render() {
-		const { description, price, shipped, imagePreview, image } = this.state;
+		const {
+			description,
+			price,
+			shipped,
+			imagePreview,
+			image,
+			isUploading
+		} = this.state;
 		const { handleAddProduct } = this;
 		return (
 			<div className="flex-center">
@@ -104,11 +161,12 @@ class NewProduct extends React.Component {
 						/>
 						<Form.Item>
 							<Button
-								disabled={!image || !description || !price}
+								disabled={!image || !description || !price || isUploading}
+								loading={isUploading}
 								type="primary"
 								onClick={handleAddProduct}
 							>
-								Add Product
+								{isUploading ? "Loading..." : "Add Product"}
 							</Button>
 						</Form.Item>
 					</Form>
