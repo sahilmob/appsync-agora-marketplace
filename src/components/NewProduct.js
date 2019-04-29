@@ -21,7 +21,8 @@ const initialState = {
   shipped: true,
   imagePreview: "",
   image: "",
-  isUploading: false
+  isUploading: false,
+  percentUploaded: 0
 };
 class NewProduct extends React.Component {
 	state = { ...initialState };
@@ -46,7 +47,15 @@ class NewProduct extends React.Component {
 			this.setState({ ...initialState });
 
 			const uploadedFile = await Storage.put(filename, image.file, {
-				contentType: image.type
+				contentType: image.type,
+				progressCallback: progress => {
+					const percentUploaded = Math.round(
+						(process.loaded / progress.total) * 100
+					);
+					this.setState({
+						percentUploaded
+					});
+				}
 			});
 
 			const file = {
@@ -83,7 +92,8 @@ class NewProduct extends React.Component {
 			shipped,
 			imagePreview,
 			image,
-			isUploading
+			isUploading,
+			percentUploaded
 		} = this.state;
 		const { handleAddProduct } = this;
 		return (
@@ -129,6 +139,14 @@ class NewProduct extends React.Component {
 						</Form.Item>
 						{imagePreview && (
 							<img className="image-preview" src={imagePreview} />
+						)}
+						{isUploading && (
+							<Progress
+								type="circle"
+								className="progress"
+								status="success"
+								percentage={percentUploaded}
+							/>
 						)}
 						<PhotoPicker
 							title="Product Image"
